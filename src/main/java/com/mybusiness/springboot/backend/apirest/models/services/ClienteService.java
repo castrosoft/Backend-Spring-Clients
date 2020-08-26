@@ -19,4 +19,20 @@ public class ClienteService implements ClienteServiceInterface {
     public List<Cliente> findAll() {
         return (List<Cliente>) clienteDao.findAll();
     }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Cliente findById(Long id) {
+        return clienteDao.findById(id).orElse(null);
+    }
+
+    @Override
+    public Cliente save(Cliente cliente) {
+        return clienteDao.save(cliente);
+    }
+
+    @Override
+    public void delete(Long id) {
+        clienteDao.deleteById(id);
+    }
 }
