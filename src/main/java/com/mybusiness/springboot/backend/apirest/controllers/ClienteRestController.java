@@ -4,11 +4,15 @@ import com.mybusiness.springboot.backend.apirest.models.entity.Cliente;
 import com.mybusiness.springboot.backend.apirest.models.services.ClienteService;
 import com.mybusiness.springboot.backend.apirest.models.services.ClienteServiceInterface;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Esta es mi API Rest
@@ -32,9 +36,30 @@ public class ClienteRestController {
 
 
     @GetMapping("/clientes/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public Cliente show(@PathVariable Long id){
-        return clienteService.findById(id);
+    //@ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<?> show(@PathVariable Long id){
+
+        Cliente cliente = null;
+        Map<String, Object> response = new HashMap<>();
+
+        //Manejo cualquier error propio de la DB
+        try {
+            cliente = clienteService.findById(id);
+
+        }catch (DataAccessException e){
+            response.put("mensaje", "Error al consultar en la DB!!!");
+            response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
+            return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+        }
+
+        //Si no encuentra el registro en la DB, muestro error
+        if(cliente == null){
+            response.put("mensaje", "El cliente ID: ".concat(id.toString().concat(" no existe en la DB!")));
+            return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+        }
+
+        //Encontro el registro. 200 OK
+        return new ResponseEntity<Cliente>(cliente, HttpStatus.OK);
     }
 
     @PostMapping("/clientes")
