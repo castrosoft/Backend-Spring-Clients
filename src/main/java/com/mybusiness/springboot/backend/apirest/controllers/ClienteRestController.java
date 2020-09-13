@@ -49,7 +49,7 @@ public class ClienteRestController {
         }catch (DataAccessException e){
             response.put("mensaje", "Error al consultar en la DB!!!");
             response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-            return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+            return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         //Si no encuentra el registro en la DB, muestro error
@@ -64,8 +64,23 @@ public class ClienteRestController {
 
     @PostMapping("/clientes")
     @ResponseStatus(HttpStatus.CREATED)
-    public Cliente create(@RequestBody Cliente cliente){
-        return clienteService.save(cliente);
+    public ResponseEntity<?> create(@RequestBody Cliente cliente){
+
+        Cliente clienteNuevo = null;
+        Map<String, Object> response = new HashMap<>();
+
+        //Manejo cualquier error propio de la DB
+        try {
+            clienteNuevo = clienteService.save(cliente);
+        }catch (DataAccessException e){
+            response.put("mensaje", "Error al realizar el insert en la DB");
+            response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
+            return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        response.put("mensaje", "El cliente ha sido creado con exito");
+        response.put("cliente", clienteNuevo);
+        return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
     }
 
     @PutMapping("/clientes/{id}")

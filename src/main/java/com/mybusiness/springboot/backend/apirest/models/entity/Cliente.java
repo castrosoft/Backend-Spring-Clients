@@ -21,8 +21,12 @@ public class Cliente implements Serializable {
     private Long id;
 
     //@Column es analogo a @Table
+    @Column(nullable = false)
     private String nombre;
+
     private String apellido;
+
+    @Column(nullable = false, unique = true)
     private String email;
 
     @Column(name = "create_at")
